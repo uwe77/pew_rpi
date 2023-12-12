@@ -1,0 +1,14 @@
+<launch>
+  <!-- connect left camera -->
+  <include file="$(find realsense2_camera)/launch/rs_rgbd.launch">
+    <arg name="serial_no"           value="040322070602"/>
+    <arg name="camera"              value="dog_cam"/>
+    <arg name="enable_fisheye"      value="false"/>
+    <arg name="enable_infra1"       value="false"/>
+    <arg name="enable_infra2"       value="false"/>
+    <arg name="enable_pointcloud"   value="false"/>
+    <arg name="depth_fps"           value="15"/>
+    <arg name="color_fps"           value="15"/>
+  </include>
+
+</launch>
