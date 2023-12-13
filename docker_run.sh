@@ -27,15 +27,14 @@ docker run -it \
     -e DISPLAY=$DISPLAY \
     -e XAUTHORITY=$XAUTH \
     -v "$XAUTH:$XAUTH" \
-    -v "/home/$USER/raspi:/home/pew/raspi" \
+    -v "/home/$USER/pew_rpi:/home/uwwee/pew_rpi" \
     -v "/etc/localtime:/etc/localtime:ro" \
     -v "/dev:/dev" \
-    -v "/home/$USER/.bashrc:/home/pew/.bashrc" \
-    --workdir "/home/pew/raspi" \
+    -v "/home/$USER/.bashrc:/home/uwwee/.bashrc" \
+    --workdir "/home/uwwee/pew_rpi" \
     --user "root:root" \
-    --name pew \
+    --name uwwee \
     --network host \
     --rm \
     --privileged \
-    raspi/dogg:lastest \
-    bash 
+    uwwee/rpi-dogg:lastest \

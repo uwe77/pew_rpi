@@ -7,7 +7,7 @@ LABEL maintainer="tuanlm@greenglobal.vn"
 # setup environment
 ENV DEBIAN_FRONTEND=noninteractive
 ENV SHELL=/bin/bash \
-    USER=pew \
+    USER=uwwee \
     NB_UID=1000 \
     LANG=en_US.UTF-8 \
     LANGUAGE=en_US.UTF-8
@@ -60,6 +60,10 @@ RUN cd ${HOME} && git clone https://github.com/IntelRealSense/librealsense.git \
     && cd build \
     && cmake .. \
     && make install
+
+RUN apt-get update && \
+    apt-get install -y ros-melodic-rgbd-launch && \
+    rm -rf /var/lib/apt/lists/*
 # RUN apt-get update
 # RUN apt-get install -y librealsense
 # RUN wget http://mirrors.ustc.edu.cn/archive.raspberrypi.org/debian/pool/main/r/raspi-config/raspi-config_20201108_all.deb

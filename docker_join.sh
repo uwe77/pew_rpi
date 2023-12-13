@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-IMG=raspi/dogg:lastest
+IMG=uwwee/raspi-dogg:lastest
 
 xhost +
 containerid=$(docker ps -aqf "ancestor=${IMG}")&& echo $containerid
