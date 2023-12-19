@@ -1,102 +1,56 @@
-# Stage 1: build base image with prequisite packages
-FROM argnctu/duckiepond:rpi-melodic
+# Start with an ARM-compatible base image
+FROM arm32v7/ubuntu:focal
 
-LABEL maintainer="tuanlm@greenglobal.vn"
+# Set environment variables to non-interactive
+# This avoids user interaction hanging the build
+ENV DEBIAN_FRONTEND noninteractive
+ENV ROS_DISTRO noetic
 
-############################ USER ###############################
-# setup environment
-ENV DEBIAN_FRONTEND=noninteractive
-ENV SHELL=/bin/bash \
-    USER=uwwee \
-    NB_UID=1000 \
-    LANG=en_US.UTF-8 \
-    LANGUAGE=en_US.UTF-8
+# Setup the ROS repository
+RUN apt-get update && apt-get install -y gnupg2 lsb-release
+RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
+RUN apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
 
-ENV HOME=/home/${USER}
-
-RUN adduser --disabled-password \
-    --gecos "Default user" \
-    ${USER}
-
-RUN echo "root:root" | chpasswd
-RUN echo "${USER}:1717" | chpasswd
-
-##################################################################################
-RUN apt-get update && \
-    apt-get install -y \
-        whiptail \
-        lua5.1 \
-        alsa-utils \
-        initramfs-tools \
-        python3-rpi.gpio \
-        python3-smbus \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN apt-get update && \
-    apt-get install -y ros-${ROS_DISTRO}-realsense2-camera && \
-    rm -rf /var/lib/apt/lists/*
-
-RUN apt-get update && \
-    apt-get install -y ros-melodic-realsense2-description && \
-    rm -rf /var/lib/apt/lists/*
-
-
+# Install ROS Base and rosserial packages
 RUN apt-get update && apt-get install -y \
-    libsuitesparse-dev\
-    software-properties-common \
-    libusb-1.0-0-dev \
-    libx11-dev \
-    xorg-dev \
-    libgl1-mesa-dev \
-    libglu1-mesa-dev \
-    && rm -rf /var/lib/apt/lists/*
+    ros-noetic-ros-base \
+    ros-noetic-rosserial \
+    ros-noetic-rosserial-arduino \
+    ros-noetic-rosserial-python
 
-# set the version of the realsense library
-ENV LIBREALSENSE_VERSION 2.50.0
-RUN cd ${HOME} && git clone https://github.com/IntelRealSense/librealsense.git \
-    && cd librealsense \
-    && git checkout v${LIBREALSENSE_VERSION} \
-    && mkdir build \
-    && cd build \
-    && cmake .. \
-    && make install
+# Install other useful tools and dependencies
+RUN apt-get install -y git wget nano
 
-RUN apt-get update && \
-    apt-get install -y ros-melodic-rgbd-launch && \
-    rm -rf /var/lib/apt/lists/*
-# RUN apt-get update
-# RUN apt-get install -y librealsense
-# RUN wget http://mirrors.ustc.edu.cn/archive.raspberrypi.org/debian/pool/main/r/raspi-config/raspi-config_20201108_all.deb
-# RUN dpkg -i raspi-config_20201108_all.deb
-# RUN apt install -fy
+# Set up the ROS environment
+RUN echo "source /opt/ros/noetic/setup.bash" >> /etc/bash.bashrc
 
-# ###rpi-update######
-# RUN curl -L --output /usr/bin/rpi-update https://raw.githubusercontent.com/Hexxeh/rpi-update/master/rpi-update
-# RUN chmod +x /usr/bin/rpi-update
-# RUN rpi-update -y
+RUN apt-get update && apt-get install -y --allow-unauthenticated \
+    apt-utils lsb-release build-essential apt-transport-https \
+    usbutils unzip coreutils curl git sed sudo tar udev wget vim \
+    automake cmake make libusb-1.0-0-dev libatlas-base-dev \
+    libopenblas-dev libprotobuf-dev libleveldb-dev libsnappy-dev \
+    libopencv-dev libhdf5-serial-dev libgflags-dev libgoogle-glog-dev \
+    liblmdb-dev libxslt-dev libxml2-dev libgraphviz-dev protobuf-compiler \
+    byacc swig3.0 graphviz gfortran \
+    python3-dev python3-numpy python3-scipy python3-yaml python3-nose python3-tk python3-pip 
 
-####picamera########
-# RUN apt-get -y dist-upgrade
-# # RUN rpi-update
-# # RUN BRANCH=next rpi-update
-# RUN pip3 install git+https://github.com/waveform80/picamera
-# RUN apt install -y python3-colorzero
+RUN apt-get update && apt-get install -y --allow-unauthenticated \
+    python3-opencv
 
-# RUN
-# RUN sudo -H pip3 install \
-#     RPI.GPIO \
-##################################################################################
+RUN sudo -H pip3 install --upgrade pip 
+RUN sudo -H pip3 install imutils
 
+##########################################################################
+# Create a new user
+RUN useradd -m rosuser && \
+    echo "rosuser:rosuser" | chpasswd && \
+    adduser rosuser sudo && \
+    echo "rosuser ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
+USER rosuser
+WORKDIR /home/rosuser
 
-##################################### setting #####################################
-RUN chown -R ${USER}:${USER} ${HOME}/
-RUN echo "${USER} ALL=(ALL)  ALL" > /etc/sudoers
-RUN usermod -aG video argduckiepond
+# Source the ROS setup for every bash session
+RUN echo "source /opt/ros/noetic/setup.bash" >> .bashrc
 
-# setup entrypoint
-
-USER ${USER}
-
-WORKDIR ${HOME}
 CMD ["bash"]

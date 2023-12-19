@@ -37,4 +37,4 @@ docker run -it \
     --network host \
     --rm \
     --privileged \
-    uwwee/rpi-dogg:lastest \
+    uwwee/rpi-dogg:latest \
