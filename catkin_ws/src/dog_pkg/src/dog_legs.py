@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import rospy
 from std_msgs.msg import Int32, String, Float32
 import math
@@ -19,6 +19,10 @@ def dog_speed_callback(msg):
         current_speed += diff_speed
     elif msg.data == "down":
         current_speed -= diff_speed
+    elif msg.data == "stop":
+        current_speed = 0
+    elif msg.data == "init":
+        current_speed = 50
 
 def main():
     global left_speed, right_speed

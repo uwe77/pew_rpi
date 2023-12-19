@@ -1,4 +1,4 @@
-source /opt/ros/melodic/setup.bash
+source /opt/ros/noetic/setup.bash
 source ./catkin_ws/devel/setup.bash
 
 if [ "$1" ]; then
