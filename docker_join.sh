@@ -1,8 +1,14 @@
 #!/usr/bin/env bash
 
-IMG=uwwee/raspi-dogg:latest
+IMG=uwwee/rpi-dogg:latest
 
+
+containerid=$(docker ps -aqf "ancestor=${IMG}") && echo $containerid
 xhost +
-containerid=$(docker ps -aqf "ancestor=${IMG}")&& echo $containerid
-docker exec --privileged -e DISPLAY=${DISPLAY} -e LINES="$(tput lines)" -it ${containerid} bash
-xhost - 
+docker exec -it \
+    --privileged \
+    -e DISPLAY=${DISPLAY} \
+    -e LINES="$(tput lines)" \
+    ${containerid} \
+    bash
+xhost -

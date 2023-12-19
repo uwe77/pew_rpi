@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+# #!/usr/bin/env bash
 
 ARGS=("$@")
 
@@ -16,6 +16,8 @@ if [ ! -f $XAUTH ]; then
     chmod a+r $XAUTH
 fi
 
+DOCKER_VER=$(dpkg-query -f='${Version}' --show docker-ce | sed 's/[0-9]://')
+DOCKER_OPTS=""
 
 #Prevent executing "docker run" when xauth failed.
 if [ ! -f $XAUTH ]; then
@@ -23,18 +25,19 @@ if [ ! -f $XAUTH ]; then
    exit 1
 fi
 
-docker run -it \
-    -e DISPLAY=$DISPLAY \
-    -e XAUTHORITY=$XAUTH \
-    -v "$XAUTH:$XAUTH" \
-    -v "/home/$USER/pew_rpi:/home/uwwee/pew_rpi" \
+docker run $DOCKER_OPTS -it \
+    -v /home/$USER/pew_rpi:/home/pew/pew_rpi \
+    -w "/home/pew/pew_rpi" \
+    -v "/tmp/.X11-unix:/tmp/.X11-unix" \
+    -e DISPLAY \
     -v "/etc/localtime:/etc/localtime:ro" \
     -v "/dev:/dev" \
-    -v "/home/$USER/.bashrc:/home/uwwee/.bashrc" \
-    --workdir "/home/uwwee/pew_rpi" \
+    -v "/var/run/docker.sock:/var/run/docker.sock" \
+    --name pew_rpi \
     --user "root:root" \
-    --name uwwee \
     --network host \
     --rm \
     --privileged \
-    uwwee/rpi-dogg:latest \
+    --security-opt seccomp=unconfined \
+    uwwee/rpi-dogg \
+    bash
