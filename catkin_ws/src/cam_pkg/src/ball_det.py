@@ -29,14 +29,14 @@ def main():
             captured_frame_lab = cv2.cvtColor(captured_frame_bgr, cv2.COLOR_BGR2Lab) # Convert to Lab color space, we only need to check one channel (a-channel) for red here
             captured_frame_lab_red = cv2.inRange(captured_frame_lab, np.array([20, 150, 150]), np.array([190, 255, 255]))
             captured_frame_lab_red = cv2.GaussianBlur(captured_frame_lab_red, (5, 5), 2, 2) # Second blur to reduce more noise, easier circle detection
-            circles = cv2.HoughCircles(captured_frame_lab_red, cv2.HOUGH_GRADIENT, 1, captured_frame_lab_red.shape[0] / 8, param1=100, param2=18, minRadius=5, maxRadius=60) # Use the Hough transform to detect circles in the image
+            circles = cv2.HoughCircles(captured_frame_lab_red, cv2.HOUGH_GRADIENT, 1, captured_frame_lab_red.shape[0] / 8, param1=100, param2=18, minRadius=5, maxRadius=300) # Use the Hough transform to detect circles in the image
             if circles is not None:
                 print("circles detected!!")
                 circles = np.round(circles[0, :]).astype("int")
                 pos_msg = Int32MultiArray()
                 pos_msg.data = [circles[0, 0], circles[0, 1]]
                 ball_pos_pub.publish(pos_msg)
-            if count >= 10:
+            if count >= 9:
                 count = 0
             count += 1
         except:
