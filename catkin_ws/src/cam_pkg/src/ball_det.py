@@ -15,9 +15,15 @@ FILE_NAME = "vision"
 def main():
     rospy.init_node('ball_det')
     ball_pos_pub = rospy.Publisher('ball_center', Int32MultiArray, queue_size=1)
+    count = 1
     while not rospy.is_shutdown():
+        print(count)
         try:
-            captured_frame = cv2.imread("../../../images/vision1.png", cv2.IMREAD_UNCHANGED)
+
+            filename = f'{FILE_NAME}{count}.png'
+            captured_frame = cv2.imread(os.path.join(IMAGE_PATH,filename), cv2.IMREAD_UNCHANGED)
+            if captured_frame is None:
+                raise Exception("Image not found")
             captured_frame_bgr = cv2.cvtColor(captured_frame, cv2.COLOR_BGRA2BGR) # Convert original image to BGR, since Lab is only available from BGR
             captured_frame_bgr = cv2.medianBlur(captured_frame_bgr, 3) # First blur to reduce noise prior to color space conversion
             captured_frame_lab = cv2.cvtColor(captured_frame_bgr, cv2.COLOR_BGR2Lab) # Convert to Lab color space, we only need to check one channel (a-channel) for red here
@@ -30,9 +36,11 @@ def main():
                 pos_msg = Int32MultiArray()
                 pos_msg.data = [circles[0, 0], circles[0, 1]]
                 ball_pos_pub.publish(pos_msg)
+            if count >= 10:
+                count = 0
+            count += 1
         except:
             pass
         rospy.sleep(0.02)
-
 if __name__ == '__main__':
     main()
