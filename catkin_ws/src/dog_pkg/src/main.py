@@ -15,9 +15,9 @@ def ball_center_callback(msg):
     global ball_x, ball_y, theta, speed, BOUND_X
     ball_x = msg.data[0]
     ball_y = msg.data[1]
-    theta = pi/2 - math.acos((ball_x-BOUND_X/2)/(BOUND_X/2))
+    theta = math.acos((ball_x-BOUND_X/2)/(BOUND_X/2))
     print(theta)
-    if int(theta) == int(pi/2):
+    if abs(abs(theta) - pi/2) <= pi/24:
         speed = 100
     else:
         speed = 50
@@ -32,7 +32,7 @@ def main():
     rospy.Subscriber('ball_center', Int32MultiArray, ball_center_callback)
     while not rospy.is_shutdown():
         print(speed)
-        theta_pub.publish(float(theta*180/pi))
+        theta_pub.publish(float(theta))
         speed_pub.publish(int(speed))
         rospy.sleep(0.1)
 if __name__ == '__main__':
