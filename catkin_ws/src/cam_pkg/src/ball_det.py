@@ -11,6 +11,8 @@ BOUND_Y = 600
 IMAGE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
             '../../../images')
 FILE_NAME = "vision"
+lower_pink = np.array([140, 100, 50])
+upper_pink = np.array([170, 255, 255])
 
 def main():
     rospy.init_node('ball_det')
@@ -35,7 +37,7 @@ def main():
             captured_frame_bgr = cv2.cvtColor(captured_frame, cv2.COLOR_BGRA2BGR) # Convert original image to BGR, since Lab is only available from BGR
             captured_frame_bgr = cv2.medianBlur(captured_frame_bgr, 3) # First blur to reduce noise prior to color space conversion
             captured_frame_lab = cv2.cvtColor(captured_frame_bgr, cv2.COLOR_BGR2Lab) # Convert to Lab color space, we only need to check one channel (a-channel) for red here
-            captured_frame_lab_red = cv2.inRange(captured_frame_lab, np.array([20, 150, 150]), np.array([190, 255, 255]))
+            captured_frame_lab_red = cv2.inRange(captured_frame_lab, lower_pink, upper_pink) # Threshold the Lab image, keep only the red pixels
             captured_frame_lab_red = cv2.GaussianBlur(captured_frame_lab_red, (5, 5), 2, 2) # Second blur to reduce more noise, easier circle detection
             circles = cv2.HoughCircles(captured_frame_lab_red, cv2.HOUGH_GRADIENT, 1, captured_frame_lab_red.shape[0] / 8, param1=100, param2=18, minRadius=5, maxRadius=300) # Use the Hough transform to detect circles in the image
             if circles is not None:
