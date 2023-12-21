@@ -9,8 +9,8 @@ ball_x = 0
 ball_y = 0
 theta = pi/2
 speed = 50
-BOUND_X = 600
-BOUND_Y = 800
+BOUND_X = 640
+BOUND_Y = 480
 def ball_center_callback(msg):
     global ball_x, ball_y, theta, speed, BOUND_X
     ball_x = msg.data[0]
@@ -32,7 +32,7 @@ def main():
     rospy.Subscriber('ball_center', Int32MultiArray, ball_center_callback)
     while not rospy.is_shutdown():
         print(speed)
-        theta_pub.publish(float(theta))
+        theta_pub.publish(float(theta*180/pi))
         speed_pub.publish(int(speed))
         rospy.sleep(0.1)
 if __name__ == '__main__':

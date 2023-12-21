@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
 import numpy as np
 import cv2
-import time, os
+import os, time
 import rospy
 from std_msgs.msg import Int32MultiArray
 
-
-BOUND_X = 800
-BOUND_Y = 600
 IMAGE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-            '../../../images')
+                          '../../../images')
 FILE_NAME = "vision"
+lower_pink = np.array([140, 100, 50])
+upper_pink = np.array([170, 255, 255])
 
 def main():
     rospy.init_node('ball_det')
@@ -18,34 +17,34 @@ def main():
     count = 0
     while not rospy.is_shutdown():
         try:
-            count += 1
-            if count>=11:
-                count = 1
+            count = (count % 10) + 1
             print(count)
-            filename = f'{os.path.join(IMAGE_PATH,FILE_NAME)}{count}.png'
+            filename = f'{os.path.join(IMAGE_PATH, FILE_NAME)}{count}.png'
             init_size = os.path.getsize(filename)
             while True:
                 time.sleep(0.02)
                 current_size = os.path.getsize(filename)
-                print(current_size)
                 if current_size == init_size:
                     break
-                init_size = current_size          
+                init_size = current_size
             captured_frame = cv2.imread(filename, cv2.IMREAD_UNCHANGED)
-            captured_frame_bgr = cv2.cvtColor(captured_frame, cv2.COLOR_BGRA2BGR) # Convert original image to BGR, since Lab is only available from BGR
-            captured_frame_bgr = cv2.medianBlur(captured_frame_bgr, 3) # First blur to reduce noise prior to color space conversion
-            captured_frame_lab = cv2.cvtColor(captured_frame_bgr, cv2.COLOR_BGR2Lab) # Convert to Lab color space, we only need to check one channel (a-channel) for red here
-            captured_frame_lab_red = cv2.inRange(captured_frame_lab, np.array([20, 150, 150]), np.array([190, 255, 255]))
-            captured_frame_lab_red = cv2.GaussianBlur(captured_frame_lab_red, (5, 5), 2, 2) # Second blur to reduce more noise, easier circle detection
-            circles = cv2.HoughCircles(captured_frame_lab_red, cv2.HOUGH_GRADIENT, 1, captured_frame_lab_red.shape[0] / 8, param1=100, param2=18, minRadius=5, maxRadius=300) # Use the Hough transform to detect circles in the image
+            output_frame = captured_frame.copy()
+            captured_frame = cv2.resize(captured_frame, (640, 480))  # Downsize the image
+            captured_frame_hsv = cv2.cvtColor(captured_frame, cv2.COLOR_BGR2HSV)  # Convert to HSV color space
+            mask = cv2.inRange(captured_frame_hsv, lower_pink, upper_pink)
+            mask = cv2.GaussianBlur(mask, (5, 5), 2)
+            circles = cv2.HoughCircles(mask, cv2.HOUGH_GRADIENT, dp=2, minDist=mask.shape[0] / 8,
+                                    param1=100, param2=18, minRadius=5, maxRadius=300)
             if circles is not None:
-                print("circles detected!!")
                 circles = np.round(circles[0, :]).astype("int")
+                cv2.circle(output_frame, center=(circles[0, 0], circles[0, 1]), radius=circles[0, 2], color=(0, 255, 0), thickness=2)
                 pos_msg = Int32MultiArray()
                 pos_msg.data = [circles[0, 0], circles[0, 1]]
                 ball_pos_pub.publish(pos_msg)
+            cv2.imwrite("../../../images/det.png", output_frame)
         except:
             pass
-        rospy.sleep(0.02)
+        rospy.sleep(0.01)  # Adjust sleep time as needed
+
 if __name__ == '__main__':
     main()

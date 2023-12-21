@@ -11,23 +11,22 @@ FILE_NAME = "vision"
 def main():
     picam2 = Picamera2()
     # picam2.start_preview(Preview.QTGL)
-    preview_config = picam2.create_preview_configuration(main={"size": (800, 600)})
+    preview_config = picam2.create_preview_configuration(main={"size": (640, 480)})
     picam2.configure(preview_config)
     picam2.start()
     count = 0
     while True:
-        count += 1
+        count = (count % 10) + 1
         filename = f'{os.path.join(IMAGE_PATH,FILE_NAME)}{count}.png'
         init_size = os.path.getsize(filename)
         while True:
+            time.sleep(0.02)
             current_size = os.path.getsize(filename)
             if current_size == init_size:
                 break
             init_size = current_size
         picam2.capture_file(filename)
-        if count>=10:
-            count = 0
-        time.sleep(0.03)
+        time.sleep(0.02)
     picam2.close()
 
 if __name__ == '__main__':
