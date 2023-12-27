@@ -17,7 +17,7 @@ def main():
     count = 0
     while not rospy.is_shutdown():
         try:
-            count = (count % 10) + 1
+            count = (count % 2) + 1
             filename = f'{os.path.join(IMAGE_PATH, FILE_NAME)}{count}.png'
             init_size = os.path.getsize(filename)
             while True:
@@ -27,17 +27,21 @@ def main():
                     break
                 init_size = current_size
             captured_frame = cv2.imread(filename, cv2.IMREAD_UNCHANGED)
+            # captured_frame = cv2.rotate(captured_frame, cv2.ROTATE_180)
             captured_frame = cv2.resize(captured_frame, (640, 480))  # Downsize the image
             captured_frame_hsv = cv2.cvtColor(captured_frame, cv2.COLOR_BGR2HSV)  # Convert to HSV color space
             mask = cv2.inRange(captured_frame_hsv, lower_pink, upper_pink)
             mask = cv2.GaussianBlur(mask, (5, 5), 2)
+            # cv2.imwrite("../../../images/mask.png", mask)
             circles = cv2.HoughCircles(mask, cv2.HOUGH_GRADIENT, dp=2, minDist=mask.shape[0] / 8,
-                                    param1=100, param2=18, minRadius=5, maxRadius=300)
+                                    param1=100, param2=18, minRadius=30, maxRadius=300)
+            pos_msg = Int32MultiArray()
             if circles is not None:
                 circles = np.round(circles[0, :]).astype("int")
-                pos_msg = Int32MultiArray()
-                pos_msg.data = [circles[0, 0], circles[0, 1]]
-                ball_pos_pub.publish(pos_msg)
+                pos_msg.data = [circles[0, 0], circles[0, 1], circles[0, 2]]
+            else:
+                pos_msg.data = [0, 0, 0]
+            ball_pos_pub.publish(pos_msg)
         except:
             pass
         rospy.sleep(0.01)  # Adjust sleep time as needed
