@@ -4,5 +4,4 @@
     <node name="ball_det" pkg="cam_pkg" type="ball_det.py" output="screen" />
     <node name="dog_legs" pkg="dog_pkg" type="dog_legs.py" output="screen" />
     <node name="main" pkg="dog_pkg" type="main.py" />
-
 </launch>

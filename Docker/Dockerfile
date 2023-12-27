@@ -40,6 +40,7 @@ RUN apt-get update && apt-get install -y --allow-unauthenticated \
 RUN sudo -H pip3 install --upgrade pip 
 RUN sudo -H pip3 install imutils
 
+RUN apt-get update && apt-get install -y python3-pygame
 ##########################################################################
 # Create a new user
 RUN useradd -m rosuser && \
