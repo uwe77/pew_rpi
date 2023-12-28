@@ -41,6 +41,7 @@ RUN sudo -H pip3 install --upgrade pip
 RUN sudo -H pip3 install imutils
 
 RUN apt-get update && apt-get install -y python3-pygame
+RUN sudo -H pip3 install git+https://github.com/adafruit/Adafruit_Python_SSD1306.git
 ##########################################################################
 # Create a new user
 RUN useradd -m rosuser && \
