@@ -45,6 +45,8 @@ RUN sudo -H pip3 install git+https://github.com/adafruit/Adafruit_Python_SSD1306
 RUN apt-get update && apt-get install -y --allow-unauthenticated \
     ros-noetic-joy libspnav-dev libbluetooth-dev libcwiid-dev
 RUN sudo -H pip3 install git+https://github.com/BPI-SINOVOIP/RPi.GPIO.git
+RUN apt-get update && apt-get install -y \
+    ros-noetic-roslint libx11-dev
 ##########################################################################
 # Create a new user
 RUN useradd -m rosuser && \
