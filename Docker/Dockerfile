@@ -42,6 +42,9 @@ RUN sudo -H pip3 install imutils
 
 RUN apt-get update && apt-get install -y python3-pygame
 RUN sudo -H pip3 install git+https://github.com/adafruit/Adafruit_Python_SSD1306.git
+RUN apt-get update && apt-get install -y --allow-unauthenticated \
+    ros-noetic-joy libspnav-dev libbluetooth-dev libcwiid-dev
+RUN sudo -H pip3 install git+https://github.com/BPI-SINOVOIP/RPi.GPIO.git
 ##########################################################################
 # Create a new user
 RUN useradd -m rosuser && \
