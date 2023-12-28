@@ -2,6 +2,8 @@
 import numpy as np
 import cv2
 import os, time
+from picamera2 import Picamera2, Preview
+import libcamera
 import rospy
 from std_msgs.msg import Int32MultiArray
 
@@ -12,6 +14,13 @@ lower_pink = np.array([140, 100, 50]) # 140 100 50
 upper_pink = np.array([170, 255, 255]) # 170, 255, 255
 
 def main():
+    picam2 = Picamera2()
+    # picam2.start_preview(Preview.QTGL)
+    preview_config = picam2.create_preview_configuration(main={"size": (640, 480)})
+    preview_config["transform"] = libcamera.Transform(hflip=1, vflip=1)
+    picam2.configure(preview_config)
+    picam2.start()
+
     rospy.init_node('ball_det')
     ball_pos_pub = rospy.Publisher('ball_center', Int32MultiArray, queue_size=1)
     count = 0
@@ -20,22 +29,10 @@ def main():
     last_R = 0
     while not rospy.is_shutdown():
         try:
-            count = (count % 2) + 1
-            filename = f'{os.path.join(IMAGE_PATH, FILE_NAME)}{count}.png'
-            init_size = os.path.getsize(filename)
-            while True:
-                time.sleep(0.02)
-                current_size = os.path.getsize(filename)
-                if current_size == init_size:
-                    break
-                init_size = current_size
-            captured_frame = cv2.imread(filename, cv2.IMREAD_UNCHANGED)
-            # captured_frame = cv2.rotate(captured_frame, cv2.ROTATE_180)
-            captured_frame = cv2.resize(captured_frame, (640, 480))  # Downsize the image
-            captured_frame_hsv = cv2.cvtColor(captured_frame, cv2.COLOR_BGR2HSV)  # Convert to HSV color space
+            captured_frame = picam2.capture_array()
+            captured_frame = cv2.cvtColor(captured_frame, cv2.COLOR_RGB2BGR)
             mask = cv2.inRange(captured_frame_hsv, lower_pink, upper_pink)
             mask = cv2.GaussianBlur(mask, (5, 5), 2)
-            # cv2.imwrite("../../../images/mask.png", mask)
             level = last_R // 100
             if level == 0:
                 min_R = 20

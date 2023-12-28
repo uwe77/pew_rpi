@@ -26,7 +26,7 @@ def track_ball():
     ball_r = 0
     ball_catch = False
     count = 0
-    rospy.init_node('track_ball')
+    rospy.init_node('chase_ball')
     speed_pub = rospy.Publisher('dog_move_speed', Int32, queue_size=1)
     theta_pub = rospy.Publisher('dog_move_dir', Float32, queue_size=1)
     catch_pub = rospy.Publisher('dog_catch_ball', Bool, queue_size=1)
@@ -43,27 +43,30 @@ def track_ball():
             else:
                 speed = 100
                 theta = pi/2
+                ball_catch = True
         elif ball_r == 0 and not ball_catch:
-            speed = 0
-            theta = pi/2
+            speed = 10
+            oper = (last_theta - pi / 2) / abs(last_theta - pi / 2) if last_theta != pi / 2 else 1
+            theta = (oper + 1)*pi/2
         
-        # if ball_catch:
-        #     if count >= 5:
-        #         catch_pub.publish(ball_catch)
-        #         theta = 0
-        #         speed = 10
-        #         if ball_r != 0:
-        #             count = 0
-        #             ball_catch = False
-        #     else:
-        #         count += 1
-        # else:
-        #     catch_pub.publish(ball_catch)
-        # print(theta*180/pi, speed, ball_r, ball_catch)
-        catch_pub.publish(ball_catch)
+        if ball_catch:
+            if count >= 5:
+                catch_pub.publish(ball_catch)
+                theta = 0
+                speed = 10
+                if ball_r != 0:
+                    count = 0
+                    ball_catch = False
+            else:
+                count += 1
+        else:
+            catch_pub.publish(ball_catch)
+
+        print(theta*180/pi, speed, ball_r, ball_catch)
         theta_pub.publish(float(theta))
+        last_theta = theta
         speed_pub.publish(int(speed))
-        # last_theta = theta
+        
         rospy.sleep(0.1)
 if __name__ == '__main__':
     track_ball()
